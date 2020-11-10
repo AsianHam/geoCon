@@ -1,0 +1,91 @@
+Clawpack Git Status 
+Diffs can be found in /Users/mandli/Dropbox/src/clawpack/geoclaw/examples/tsunami/chile2010/_output/claw_git_diffs.txt
+
+Tue, 03 Mar 2020 16:38:01 EST
+$CLAW = /Users/mandli/Dropbox/src/clawpack
+$FC = not set
+
+
+===========
+classic
+===========
+/Users/mandli/Dropbox/src/clawpack/classic
+
+--- last commit ---
+5546fec Merge pull request #86 from ClimateImpactLab/gitignore
+
+--- branch and status ---
+## HEAD (no branch)
+
+
+===========
+amrclaw
+===========
+/Users/mandli/Dropbox/src/clawpack/amrclaw
+
+--- last commit ---
+c248699 Merge pull request #255 from rjleveque/close_fortb
+
+--- branch and status ---
+## master...clawpack/master
+
+
+===========
+clawutil
+===========
+/Users/mandli/Dropbox/src/clawpack/clawutil
+
+--- last commit ---
+a06d78a Merge pull request #138 from mandli/fix-python2-incompatibility
+
+--- branch and status ---
+## master...clawpack/master
+ M src/Makefile.common
+
+
+===========
+pyclaw
+===========
+/Users/mandli/Dropbox/src/clawpack/pyclaw
+
+--- last commit ---
+05b9f730 Merge pull request #640 from ranocha/cubic
+
+--- branch and status ---
+## master...clawpack/master
+
+
+===========
+visclaw
+===========
+/Users/mandli/Dropbox/src/clawpack/visclaw
+
+--- last commit ---
+8c58407 Merge pull request #255 from rjleveque/gridtools
+
+--- branch and status ---
+## master...clawpack/master
+
+
+===========
+riemann
+===========
+/Users/mandli/Dropbox/src/clawpack/riemann
+
+--- last commit ---
+d7b4d72 Merge pull request #158 from ranocha/cubic
+
+--- branch and status ---
+## master...clawpack/master
+
+
+===========
+geoclaw
+===========
+/Users/mandli/Dropbox/src/clawpack/geoclaw
+
+--- last commit ---
+a10b10ae Merge pull request #424 from rjleveque/read_header_netcdf
+
+--- branch and status ---
+## master...clawpack/master [behind 17]
