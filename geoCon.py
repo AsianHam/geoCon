@@ -1,27 +1,13 @@
-from qgis.core import *
-from qgis.PyQt.QtCore import QVariant
-from qgis.PyQt.QtGui import QColor
-from osgeo import gdal, osr
+import gdal, ogr, os, osr
 import numpy as np
-import os, glob, datetime, sys, math, qgis.utils
-import clawpack.pyclaw.solution as solution 
+import clawpack.pyclaw.solution as solution
+import datetime, sys
 
-def main(sol, extension):
-    qgs = QgsApplication([], False)
-    qgs.initQgis()
-    render(qgs, sol, extension)
-    qgs.exitQgis()
-
-#def main(extension):
-def render(qgs, sol, extension):
-    #QgsApplication.setPrefixPath('/usr/bin/qgis', True)
-    qgs.setPrefixPath('/usr/bin/qgis', True)
-    #qgs = QgsApplication([], False)
-    #qgs.initQgis()
+def render(extension):
     extension = str(extension)
     print('the extension is:', extension)
 
-    #sol = solution.Solution(int(extension))
+    sol = solution.Solution(int(extension))
 
     #first read through to determine certain values present in the file
     maxVal = 0
@@ -125,39 +111,6 @@ def render(qgs, sol, extension):
             ds.SetGeoTransform(geot)
             ds = None
 
-            #reset color map
-            rlayer = QgsRasterLayer(fName)
-            provider = rlayer.dataProvider()
-            provider.setNoDataValue(1, ndv)
-            extent = rlayer.extent()
-            stats = provider.bandStatistics(1, QgsRasterBandStats.All, extent, 0)
-            pipe = QgsRasterPipe()
-
-            width, height = rlayer.width(), rlayer.height()    
-
-            fcn = QgsColorRampShader()
-            fcn.setColorRampType(QgsColorRampShader.Interpolated)
-
-            midVal = (maxVal + minVal) / 2
-
-            lst = [QgsColorRampShader.ColorRampItem(minVal, QColor(0, 0, 255)),
-                    QgsColorRampShader.ColorRampItem(midVal, QColor(0, 255, 255)),
-                    QgsColorRampShader.ColorRampItem(maxVal, QColor(255, 0, 0))]
-
-            fcn.setColorRampItemList(lst)
-            shader = QgsRasterShader()
-            shader.setRasterShaderFunction(fcn)
-
-            renderer = QgsSingleBandPseudoColorRenderer(rlayer.dataProvider(), 1, shader)
-            rlayer.setRenderer(renderer)
-            rlayer.triggerRepaint()
-
-            pipe.set(provider.clone())
-            pipe.set(renderer.clone())
-
-            write = QgsRasterFileWriter(fNameFin)
-            write.writeRaster(pipe, width, height, extent, rlayer.crs())
-
         except Exception as ex:
             if type(ex) == IndexError:
                 print(ex)
@@ -171,7 +124,6 @@ def render(qgs, sol, extension):
                 break
 
     #Merge tifs into one final tif
-    sys.path.append('/usr/bin/')
     import gdal_merge as gm
 
     orderedFiles = ['', '-o', directory + '0' + extension + '.tif', '-ps', str(mindx), str(mindy)]
@@ -179,15 +131,29 @@ def render(qgs, sol, extension):
     for key, val in sorted(amr.items()):
         for i in val:
             f = i[:-11]
-            orderedFiles.append(f + 'finqraster.tif')
+            #orderedFiles.append(f + 'finqraster.tif')
+            orderedFiles.append(f + 'qraster.tif')
 
     sys.argv = orderedFiles
     gm.main()
 
     print('\nThe rasterization is complete. The file name is', '0'+extension+'.tif')
+
+    #Create color map
+    midVal = (maxVal + minVal) / 2
+    os.chdir(directory[:-1])
+    f = open('color_map.txt', 'w+')
+    f.write(str(minVal) + ' 0 0 255\n')
+    f.write(str(midVal) + ' 0 255 255\n')
+    f.write(str(maxVal) + ' 255 0 0\n')
+    f.write(str(ndv) + ' 0 0 0 0')
+    f.close()
+
+    #apply color map
+    colors = 'gdaldem color-relief ' + '0'+extension+'.tif ' + 'color_map.txt ' + '-alpha ' + '0'+extension+'color.tif'
+    os.system(colors)
     return
-    #qgs.exitQgis()
 
 if __name__ == '__main__':
     ext = input('Type the file you want to render: ')     #e.g. 9
-    main(ext)
+    render(ext)
