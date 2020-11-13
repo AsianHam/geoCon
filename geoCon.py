@@ -6,12 +6,22 @@ import numpy as np
 import os, glob, datetime, sys, math, qgis.utils
 import clawpack.pyclaw.solution as solution 
 
-def main(extension):
-    QgsApplication.setPrefixPath('/usr/bin/qgis', True)
+def main(sol, extension):
     qgs = QgsApplication([], False)
     qgs.initQgis()
+    render(qgs, sol, extension)
+    qgs.exitQgis()
 
-    sol = solution.Solution(int(extension))
+#def main(extension):
+def render(qgs, sol, extension):
+    #QgsApplication.setPrefixPath('/usr/bin/qgis', True)
+    qgs.setPrefixPath('/usr/bin/qgis', True)
+    #qgs = QgsApplication([], False)
+    #qgs.initQgis()
+    extension = str(extension)
+    print('the extension is:', extension)
+
+    #sol = solution.Solution(int(extension))
 
     #first read through to determine certain values present in the file
     maxVal = 0
@@ -94,6 +104,8 @@ def main(extension):
             amr[amrVal].append(fName)
             
         ds = driver.Create(fName, xsize=xMax, ysize=yMax, bands=1, eType=gdal.GDT_Float32)
+        if ds is None:
+            return
         ndv = -100                                                        #The designated no data value
         band = ds.GetRasterBand(1).ReadAsArray()
         
@@ -173,7 +185,8 @@ def main(extension):
     gm.main()
 
     print('\nThe rasterization is complete. The file name is', '0'+extension+'.tif')
-    qgs.exitQgis()
+    return
+    #qgs.exitQgis()
 
 if __name__ == '__main__':
     ext = input('Type the file you want to render: ')     #e.g. 9
