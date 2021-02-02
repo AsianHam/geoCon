@@ -1,13 +1,14 @@
-import gdal, ogr, os, osr
+import gdal, ogr, os, osr, glob
 import numpy as np
 import clawpack.pyclaw.solution as solution
 import datetime, sys
 
-def render(extension):
+def render(sol, extension):
+
     extension = str(extension)
     print('the extension is:', extension)
 
-    sol = solution.Solution(int(extension))
+    #sol = solution.Solution(int(extension))
 
     #first read through to determine certain values present in the file
     maxVal = 0
@@ -15,11 +16,13 @@ def render(extension):
     mindx = 100
     mindy = 100
 
-    dt = datetime.datetime.now().strftime('%m-%d_%H-%M')
+    #dt = datetime.datetime.now().strftime('%m-%d_%H-%M')
 
+    """
     directory = extension + ' ' + dt + '/'
     if not os.path.exists(directory):
         os.makedirs(directory)
+    """
 
     fnBase = 'qraster.tif'
     driver = gdal.GetDriverByName('GTiff')
@@ -77,10 +80,15 @@ def render(extension):
         height = hData[key][6]  #dy headers
 
         fArray = rData[key]
-        
+
+        """  
         fName = directory + str(key) + fnBase
         fTemp = directory + str(key) + 'temp' + fnBase
         fNameFin = directory + str(key) + 'fin' + fnBase
+        """
+        fName = str(key) + fnBase
+        fTemp = str(key) + 'temp' + fnBase
+        fNameFin = str(key) + 'fin' + fnBase
         
         if amrVal in amr.keys():
             amr[amrVal].append(fName)
@@ -126,7 +134,8 @@ def render(extension):
     #Merge tifs into one final tif
     import gdal_merge as gm
 
-    orderedFiles = ['', '-o', directory + '0' + extension + '.tif', '-ps', str(mindx), str(mindy)]
+    #orderedFiles = ['', '-o', directory + '0' + extension + '.tif', '-ps', str(mindx), str(mindy)]
+    orderedFiles = ['', '-o', '0' + extension + '.tif', '-ps', str(mindx), str(mindy)]
 
     for key, val in sorted(amr.items()):
         for i in val:
@@ -141,7 +150,7 @@ def render(extension):
 
     #Create color map
     midVal = (maxVal + minVal) / 2
-    os.chdir(directory[:-1])
+    #os.chdir(directory[:-1])
     f = open('color_map.txt', 'w+')
     f.write(str(minVal) + ' 0 0 255\n')
     f.write(str(midVal) + ' 0 255 255\n')
@@ -152,6 +161,10 @@ def render(extension):
     #apply color map
     colors = 'gdaldem color-relief ' + '0'+extension+'.tif ' + 'color_map.txt ' + '-alpha ' + '0'+extension+'color.tif'
     os.system(colors)
+    for cleanUp in glob.glob('./*.*'):
+        if cleanUp.endswith('.tif'):
+            if not cleanUp.endswith('color.tif'):
+                os.remove(cleanUp)
     return
 
 if __name__ == '__main__':
